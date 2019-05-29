@@ -31,89 +31,89 @@ ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243
 #### Configuration objects
 
 ```java
-	private DataSourceConfigurer getDataSourceConfigurer() {
-		return new DataSourceConfigurer() {
-			@Override
-			public DataSource createDataSource(String host, int port) {
-				PGSimpleDataSource dataSource = new PGSimpleDataSource();
-				dataSource.setUrl(String.format("jdbc:postgresql://%s:%d/%s", host, port, POSTGRES_DB));
-				dataSource.setUser("user");
-				dataSource.setPassword("pass");
-				dataSource.setDatabaseName("myDb");
+private DataSourceConfigurer getDataSourceConfigurer() {
+	return new DataSourceConfigurer() {
+		@Override
+		public DataSource createDataSource(String host, int port) {
+			PGSimpleDataSource dataSource = new PGSimpleDataSource();
+			dataSource.setUrl(String.format("jdbc:postgresql://%s:%d/%s", host, port, POSTGRES_DB));
+			dataSource.setUser("user");
+			dataSource.setPassword("pass");
+			dataSource.setDatabaseName("myDb");
 
-				return dataSource;
-			}
+			return dataSource;
+		}
 
-			@Override
-			public String getDataDirPath(Object dataSourceId, String dataSourceContainerDataDirPath) {
-				return findDataFolder(dataSourceId);
-			}
+		@Override
+		public String getDataDirPath(Object dataSourceId, String dataSourceContainerDataDirPath) {
+			return findDataFolder(dataSourceId);
+		}
 
-			@Override
-			public Object getDataSourceId() {
-				return getRequestContextDataModelVersionId();
-			}
+		@Override
+		public Object getDataSourceId() {
+			return getRequestContextDataModelVersionId();
+		}
 
-			@Override
-			public boolean validateDataSource(DataSource dataSource) {
-				Connection connection;
-				try {
-					connection = dataSource.getConnection();
-					connection.close();
-					return true;
-				} catch (Exception e) {
-					return false;
-				}
+		@Override
+		public boolean validateDataSource(DataSource dataSource) {
+			Connection connection;
+			try {
+				connection = dataSource.getConnection();
+				connection.close();
+				return true;
+			} catch (Exception e) {
+				return false;
 			}
-		};
-	}	
+		}
+	};
+}	
 	
-	private DataSourceContainerParameters getDataSourceContainerParameters() {
-		DataSourceContainerParameters dataSourceContainerParameters = new DataSourceContainerParameters();
-		dataSourceContainerParameters.setDataVolumes(new String[] { "/var/lib/postgresql/data" });
-		dataSourceContainerParameters.setImageName("postgres:9.4");
-		dataSourceContainerParameters.setPort(5432);
-		dataSourceContainerParameters.useDockerProxy(getPortBindingSupplier());
-		dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_USER", POSTGRES_USER);
-		dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_PASSWORD", POSTGRES_PASSWORD);
-		dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_DB", POSTGRES_DB);
+private DataSourceContainerParameters getDataSourceContainerParameters() {
+	DataSourceContainerParameters dataSourceContainerParameters = new DataSourceContainerParameters();
+	dataSourceContainerParameters.setDataVolumes(new String[] { "/var/lib/postgresql/data" });
+	dataSourceContainerParameters.setImageName("postgres:9.4");
+	dataSourceContainerParameters.setPort(5432);
+	dataSourceContainerParameters.useDockerProxy(getPortBindingSupplier());
+	dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_USER", POSTGRES_USER);
+	dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_PASSWORD", POSTGRES_PASSWORD);
+	dataSourceContainerParameters.getEnvironmentVariables().put("POSTGRES_DB", POSTGRES_DB);
 
-		return dataSourceContainerParameters;
-	}
-	
-	
-	private DockerClientConfig getDockerClientConfig() {
-		return DefaultDockerClientConfig.createDefaultConfigBuilder()
-				.withDockerHost("tcp://0.0.0.0:4243")
-				.withRegistryUrl("https://index.docker.io/v1/")
-				.withRegistryUsername("myDockerHubId")
-				.withRegistryPassword("pass")
-				.withRegistryEmail("me@dockerhub.com")
-				.build();
-	}
+	return dataSourceContainerParameters;
+}
 
-	private PortBindingSupplier getPortBindingSupplier() {
-		return new PortBindingSupplier() {
-			@Override
-			public int getAvailablePort(Collection<Integer> dockerPortBindingsInUse) {
-				if (dockerPortBindingsInUse.isEmpty())
-					return 5432;
-				return Collections.max(dockerPortBindingsInUse) + 1;
-			}
-		};
-	}
+
+private DockerClientConfig getDockerClientConfig() {
+	return DefaultDockerClientConfig.createDefaultConfigBuilder()
+			.withDockerHost("tcp://0.0.0.0:4243")
+			.withRegistryUrl("https://index.docker.io/v1/")
+			.withRegistryUsername("myDockerHubId")
+			.withRegistryPassword("pass")
+			.withRegistryEmail("me@dockerhub.com")
+			.build();
+}
+
+private PortBindingSupplier getPortBindingSupplier() {
+	return new PortBindingSupplier() {
+		@Override
+		public int getAvailablePort(Collection<Integer> dockerPortBindingsInUse) {
+			if (dockerPortBindingsInUse.isEmpty())
+				return 5432;
+			return Collections.max(dockerPortBindingsInUse) + 1;
+		}
+	};
+}
 
 ```
 #### Creating data source balancer
 ```java
-	@Bean
-	@Primary
-	public DataSource routingDataSource() 
-	throws DockerException, InterruptedException, IOException, ExecutionException, 	InstantiationException, IllegalAccessException {
-		DataSourceConfigurer dataSourceConfigurer = getDataSourceConfigurer();
-		DataSourceContainerManager dataSourceContainerManager = new DataSourceContainerManager(getDataSourceContainerParameters(), dataSourceConfigurer, getDockerClientConfig());
-		return RoutingDataSourceFactory.createRoutingDataSource(PGSimpleDataSource.class, 1L, dataSourceContainerManager, dataSourceConfigurer, 60000L);
-	}
+@Bean
+@Primary
+public DataSource routingDataSource() 
+throws DockerException, InterruptedException, IOException, ExecutionException, 	InstantiationException, IllegalAccessException {
+	DataSourceConfigurer dataSourceConfigurer = getDataSourceConfigurer();
+	DataSourceContainerManager dataSourceContainerManager = new DataSourceContainerManager(getDataSourceContainerParameters(), dataSourceConfigurer, getDockerClientConfig());
+	return RoutingDataSourceFactory.createRoutingDataSource(PGSimpleDataSource.class, 1L, dataSourceContainerManager, dataSourceConfigurer, 60000L);
+}
 
 ```
 #### License
