@@ -1,73 +1,65 @@
-package com.magidc.balea.proxy.cache.docker;
+/*
+ *
+ *  Copyright 2019 magidc.io
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
+ */
+package com.magidc.balea.core.proxy.cache.docker;
 
 import java.io.IOException;
 
 import javax.sql.DataSource;
 
 import com.github.dockerjava.api.exception.DockerException;
-import com.magidc.balea.docker.DockerDBManager;
-import com.magidc.balea.model.exception.DataSourceNotAvailableException;
-import com.magidc.balea.proxy.cache.config.DataSourceCacheManagerConfigurer;
-import com.magidc.balea.proxy.cache.model.ManagedDataSource;
+import com.magidc.balea.core.container.DataSourceContainerManager;
+import com.magidc.balea.core.model.exception.DataSourceNotAvailableException;
+import com.magidc.balea.core.proxy.cache.config.DataSourceCacheManagerConfigurer;
+import com.magidc.balea.core.proxy.cache.model.ManagedDataSource;
 
 /**
  * Docker based implementation of data source cache manager actions configurer
  * 
- * @author magidc
+ * @author magidc <info@magidc.io>
  *
  */
 public class DockerDataSourceCacheManagerConfigurer implements DataSourceCacheManagerConfigurer {
 
-    private DockerDBManager dockerDBManager;
+	private DataSourceContainerManager dataSourceContainerManager;
 
-    public DockerDataSourceCacheManagerConfigurer(DockerDBManager dockerDBManager) {
-	super();
-	this.dockerDBManager = dockerDBManager;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.magidc.balea.proxy.cache.config.DataSourceCacheManagerConfigurer#
-     * obtainDataSource(java.lang.Object)
-     */
-    @Override
-    public DataSource obtainDataSource(Object dataSourceId) throws IOException {
-	try {
-	    return dockerDBManager.getContainerDBDataSource(dataSourceId);
-	} catch (DockerException e) {
-	    throw new IOException(e);
-	} catch (InterruptedException e) {
-	    throw new IOException(e);
-	} catch (DataSourceNotAvailableException e) {
-	    throw new IOException(e.getMessage());
+	public DockerDataSourceCacheManagerConfigurer(DataSourceContainerManager dataSourceContainerManager) {
+		super();
+		this.dataSourceContainerManager = dataSourceContainerManager;
 	}
-    }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.magidc.balea.proxy.cache.config.DataSourceCacheManagerConfigurer#
-     * closeDataSource(java.lang.Object)
-     */
-    @Override
-    public void closeDataSource(Object dataSourceId) {
-	dockerDBManager.stopAndRemoveContainerDB(dataSourceId);
-    }
+	@Override
+	public void closeDataSource(Object dataSourceId) {
+		dataSourceContainerManager.stopAndRemoveDataSourceContainer(dataSourceId);
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.magidc.balea.proxy.cache.config.DataSourceCacheManagerConfigurer#
-     * checkDataSource(com.magidc.balea.proxy.cache.model.ManagedDataSource)
-     */
-    @Override
-    public boolean validateDataSource(ManagedDataSource managedDataSource) throws IOException {
-	return dockerDBManager.isDataSourceContainerDBUp(managedDataSource.getDataSourceId())
-		&& dockerDBManager.validateDataSource(managedDataSource.getDataSource());
-    }
+	@Override
+	public DataSource obtainDataSource(Object dataSourceId) throws IOException {
+		try {
+			return dataSourceContainerManager.getDataSource(dataSourceId);
+		} catch (DockerException | InterruptedException | DataSourceNotAvailableException e) {
+			throw new IOException(e);
+		}
+	}
 
+	@Override
+	public boolean validateDataSource(ManagedDataSource managedDataSource) throws IOException {
+		return dataSourceContainerManager.isDataSourceContainerUp(managedDataSource.getDataSourceId())
+				&& dataSourceContainerManager.validateDataSource(managedDataSource.getDataSource());
+	}
 }
