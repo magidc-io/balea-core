@@ -1,60 +1,56 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.magidc</groupId>
-	<artifactId>balea</artifactId>
-	<version>0.1</version>
+	<groupId>io.magidc</groupId>
+	<artifactId>balea-core</artifactId>
+	<version>1.0</version>
 	<name>balea</name>
-	<description>Database balancer based in Docker DB containers dynamically managed</description>
-	<url>https://github.com/magidc/balea</url>
-
+	<description>
+		Balea creates a proxy of Java data source, providing dynamic routing to multiple Docker based databases following a federated database system architecture.  
+		Docker is used as manager to create, start or stop database containers on demand and link correspondent data volumes. Thanks to this approach is possible to distribute data across multiple databases keeping active only the necessary ones in each moment maximizing the use of system resources. Java application is completely unaware of this distribution of data as everything is managed behind the data source load balancer.
+		Also, it makes a standard SQL database like Postgresql or MySQL to be maintained, backed up or versioned with simple file system operations as the data volumes are attached dynamically to the managed Docker containers.
+		Docker integration allows also to manage database containers in remote hosts.
+	</description>
+	<url>https://github.com/magidc/balea-core</url>
+	<inceptionYear>2019</inceptionYear>
 
 	<issueManagement>
-		<url>https://github.com/magidc/balea/issues</url>
+		<url>https://github.com/magidc/balea-core/issues</url>
 		<system>GitHub Issues</system>
 	</issueManagement>
 
 	<licenses>
 		<license>
-			<name>The MIT License (MIT)</name>
-			<url>http://opensource.org/licenses/MIT</url>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
-	<scm>
-		<url>https://github.com/magidc/balea</url>
-		<connection>scm:git:git@github.com:magidc/balea.git</connection>
-		<developerConnection>scm:git:git@github.com:magidc/balea.git</developerConnection>
-	</scm>
 
 	<developers>
 		<developer>
 			<name>Ricardo Rodriguez</name>
 			<id>magidc</id>
-			<organization>magidc</organization>
-			<email>ricardo.rodcas@gmail.com</email>
-			<url>https://github.com/kevinsawicki</url>
+			<organization>magidc.io</organization>
+			<email>info@magidc.io</email>
+			<url>https://github.com/magidc</url>
 		</developer>
 	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compile.source>3.5.4</maven.compile.source>
+		<maven.compile.target>3.5.4</maven.compile.target>
 	</properties>
-
-
 
 	<dependencies>
 		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>3.2.5</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
-			<version>3.0.6</version>
+			<version>3.1.2</version>
 		</dependency>
 	</dependencies>
 
@@ -65,8 +61,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 
@@ -80,7 +76,6 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.8</version>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>
